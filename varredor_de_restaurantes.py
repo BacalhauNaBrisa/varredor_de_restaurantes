@@ -154,10 +154,10 @@ def main():
         st.session_state["data"] = []
         st.session_state["search_complete"] = False
 
-    location = st.text_input("Enter a city (e.g., 'Lisbon, Portugal')")
+    location = st.text_input("Digita uma cidade (e.g., 'Lisboa, Portugal')")
 
     col1, col2 = st.columns([1, 1])
-    if col1.button("Search Restaurants") and location:
+    if col1.button("Pesquisar Restaurantes") and location:
         st.session_state["location"] = location
         with st.spinner("Geocoding city..."):
             northeast, southwest = get_city_bounds(location)
@@ -199,7 +199,7 @@ def main():
         st.session_state["data"] = data
         st.session_state["search_complete"] = True
 
-    if col2.button("Clear Results"):
+    if col2.button("Limpar Resultados"):
         st.session_state["data"] = []
         st.session_state["search_complete"] = False
 
@@ -207,7 +207,7 @@ def main():
         location = st.session_state.get("location", "city")
         data = st.session_state["data"]
 
-        st.success(f"Found {len(data)} restaurants in {location}!")
+        st.success(f"Encontrados {len(data)} restaurantes em {location}!")
         df = pd.DataFrame(data)
         display_df = df.drop(columns=["Lat", "Lng"])
 
@@ -222,24 +222,24 @@ def main():
         with col3:
             csv_filename = f"restaurants_{location.lower().replace(',', '').replace(' ', '_')}.csv"
             csv_data = display_df.to_csv(index=False).encode("utf-8")
-            st.download_button("Download CSV", csv_data, file_name=csv_filename, mime="text/csv")
+            st.download_button("Descarregar CSV", csv_data, file_name=csv_filename, mime="text/csv")
 
         with col4:
             excel_buffer = BytesIO()
             with pd.ExcelWriter(excel_buffer, engine="xlsxwriter") as writer:
                 display_df.to_excel(writer, index=False, sheet_name="Restaurants")
-            st.download_button("Download Excel", excel_buffer.getvalue(), file_name=csv_filename.replace(".csv", ".xlsx"), mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            st.download_button("Descarregar Excel", excel_buffer.getvalue(), file_name=csv_filename.replace(".csv", ".xlsx"), mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
         m = create_map(data)
         if m:
             st_folium(m, height=500)
 
         st.markdown("---")
-        if st.button("Upload to Google Sheets"):
+        if st.button("Carregar ao Google Sheets"):
             worksheet_name = location.lower().replace(",", "").replace(" ", "_")
             success = export_to_google_sheets(display_df.to_dict(orient="records"), "restaurantes_varridos", worksheet_name)
             if success:
-                st.success("Google Sheet updated!")
+                st.success("Google Sheet atualizado!")
             else:
                 st.error("Failed to upload.")
 
