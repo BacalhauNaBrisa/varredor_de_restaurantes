@@ -34,11 +34,12 @@ if "access_granted" not in st.session_state:
 
 if not st.session_state["access_granted"]:
     input_passkey = st.text_input("Digite a passkey para continuar:", type="password", key="passkey_input")
-    submitted = st.button("Enviar Passkey")
-    if submitted:
+    if st.button("Enviar Passkey"):
         if input_passkey == correct_passkey:
             st.session_state["access_granted"] = True
-            st.experimental_rerun()  # aqui vai tentar usar, e se não funcionar, remova essa linha e use st.stop() abaixo
+            st.experimental_singleton.clear()
+            st.experimental_memo.clear()
+            st.stop()  # Aqui para forçar a "atualização" e o app continua com acesso concedido
         else:
             st.error("🔒 Passkey incorreta. Tente novamente.")
     st.stop()
