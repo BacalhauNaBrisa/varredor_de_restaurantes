@@ -149,7 +149,7 @@ def export_to_google_sheets(data, sheet_name, worksheet_name):
     return True
 
 def main():
-    st.title("🍽️ Restaurant Scraper & Explorer")
+    st.title("Varredor de Restaurantes")
     if "data" not in st.session_state:
         st.session_state["data"] = []
         st.session_state["search_complete"] = False
