@@ -8,12 +8,11 @@ import numpy as np
 import pandas as pd
 from io import BytesIO
 from math import radians, cos
-from oauth2client.service_account import ServiceAccountCredentials
+from google.oauth2.service_account import Credentials
 from streamlit_folium import st_folium
 from st_aggrid import AgGrid, GridOptionsBuilder
-import os
 
-API_KEY = st.secrets["GOOGLE_API_KEY"]  # API Key is securely loaded from Secrets.
+API_KEY = st.secrets["GOOGLE_API_KEY"]  # Securely loaded from Streamlit secrets
 PLACES_API_BASE = "https://places.googleapis.com/v1"
 
 
@@ -112,7 +111,7 @@ def create_map(data):
 
 def export_to_google_sheets(data, sheet_name, worksheet_name):
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    creds = ServiceAccountCredentials.from_json_keyfile_name("credentials.json", scope)
+    creds = Credentials.from_service_account_info(st.secrets["GOOGLE_SHEETS_CREDENTIALS"], scopes=scope)
     client = gspread.authorize(creds)
 
     try:
