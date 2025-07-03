@@ -9,5 +9,5 @@ google-auth-httplib2
 numpy
 pandas
 streamlit-folium
-st-aggrid
+streamlit-aggrid
 XlsxWriter
