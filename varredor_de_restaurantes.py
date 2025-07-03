@@ -13,45 +13,39 @@ from google.oauth2.service_account import Credentials
 from streamlit_folium import st_folium
 from st_aggrid import AgGrid, GridOptionsBuilder
 
-# --- Configuração da página ---
+# Configuração da página
 logo_path = os.path.join("assets", "logo.png")
 favicon_path = os.path.join("assets", "favicon.png")
 page_icon = favicon_path if os.path.exists(favicon_path) else "🍽️"
 st.set_page_config(page_title="Varredor de Restaurantes", page_icon=page_icon, layout="wide")
 
-# Exibe logo
+# Logo
 if os.path.exists(logo_path):
     logo = Image.open(logo_path)
     st.image(logo, width=150)
 else:
     st.write("Logo não encontrada.")
 
-# --- Proteção por Passkey ---
-st.markdown("### 🔐 Digite a chave de acesso para continuar:")
-input_passkey = st.text_input("Passkey", type="password")
-
+# Passkey
 correct_passkey = st.secrets.get("ACCESS_PASSKEY")
 
 if "access_granted" not in st.session_state:
     st.session_state["access_granted"] = False
 
 if not st.session_state["access_granted"]:
-    if st.button("Enviar Passkey"):
+    input_passkey = st.text_input("Digite a passkey para continuar:", type="password", key="passkey_input")
+    submitted = st.button("Enviar Passkey")
+    if submitted:
         if input_passkey == correct_passkey:
             st.session_state["access_granted"] = True
-            st.experimental_rerun()
+            st.experimental_rerun()  # aqui vai tentar usar, e se não funcionar, remova essa linha e use st.stop() abaixo
         else:
             st.error("🔒 Passkey incorreta. Tente novamente.")
-    else:
-        st.warning("🔒 Insira a passkey correta para habilitar a pesquisa.")
+    st.stop()
 
-if not st.session_state["access_granted"]:
-    st.stop()  # Para a execução do app enquanto não autorizado
-
-# --- A partir daqui: app principal ---
-
+# A partir daqui, app principal
 API_KEY = st.secrets["GOOGLE_API_KEY"]
-PLACES_API_BASE = "https://places.googleapis.com/maps/api"
+PLACES_API_BASE = "https://maps.googleapis.com/maps/api"
 
 def get_city_bounds(location):
     url = "https://maps.googleapis.com/maps/api/geocode/json"
@@ -88,7 +82,7 @@ def search_nearby(lat, lng, radius=4000):
     while True:
         if next_page_token:
             params["pagetoken"] = next_page_token
-            time.sleep(2)  # delay para ativar token
+            time.sleep(2)
         response = requests.get(url, params=params)
         if response.status_code != 200:
             break
@@ -209,7 +203,6 @@ def main():
 
         st.success(f"Foram encontrados {len(data)} restaurantes em {location}!")
 
-        # Criar DataFrame para mostrar na tabela, omitindo lat/lng
         df = pd.DataFrame(data)
         display_df = df.drop(columns=[c for c in ["lat", "lng"] if c in df.columns])
 
