@@ -28,16 +28,26 @@ if os.path.exists(logo_path):
 else:
     st.write("Logo not found.")
 
-# --- Passkey para segurança ---
-st.markdown("### 🔐 Digite a chave de acesso para continuar:")
-input_passkey = st.text_input("Passkey", type="password")
+# --- Passkey para segurança com formulário ---
+if "access_granted" not in st.session_state:
+    st.session_state.access_granted = False
 
-correct_passkey = st.secrets.get("ACCESS_PASSKEY")
-access_granted = input_passkey == correct_passkey
+if not st.session_state.access_granted:
+    st.markdown("### 🔐 Digite a chave de acesso para continuar:")
 
-if not access_granted:
-    st.warning("🔒 Insira a passkey correta para habilitar a pesquisa.")
-    st.stop()  # Interrompe a execução abaixo se a passkey estiver errada
+    with st.form("passkey_form", clear_on_submit=False):
+        input_passkey = st.text_input("Passkey", type="password")
+        submit_button = st.form_submit_button("Enviar")
+
+        if submit_button:
+            correct_passkey = st.secrets.get("ACCESS_PASSKEY")
+            if input_passkey == correct_passkey:
+                st.session_state.access_granted = True
+                st.success("✅ Acesso concedido!")
+                st.experimental_rerun()
+            else:
+                st.error("🔒 Passkey incorreta. Tente novamente.")
+    st.stop()
 
 API_KEY = st.secrets["GOOGLE_API_KEY"]
 PLACES_API_BASE = "https://places.googleapis.com/v1"
