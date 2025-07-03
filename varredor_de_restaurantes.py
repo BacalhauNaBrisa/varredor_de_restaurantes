@@ -13,7 +13,7 @@ from streamlit_folium import st_folium
 from st_aggrid import AgGrid, GridOptionsBuilder
 import os
 
-API_KEY = os.environ.get("GOOGLE_API_KEY")  # API Key is securely loaded from environment
+API_KEY = st.secrets["GOOGLE_API_KEY"]  # API Key is securely loaded from Secrets.
 PLACES_API_BASE = "https://places.googleapis.com/v1"
 
 
