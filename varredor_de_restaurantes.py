@@ -1,4 +1,6 @@
 import streamlit as st
+from PIL import Image
+import os
 import requests
 import csv
 import time
@@ -12,9 +14,22 @@ from google.oauth2.service_account import Credentials
 from streamlit_folium import st_folium
 from st_aggrid import AgGrid, GridOptionsBuilder
 
-API_KEY = st.secrets["GOOGLE_API_KEY"]  # Securely loaded from Streamlit secrets
-PLACES_API_BASE = "https://places.googleapis.com/v1"
+# --- Logo & Favicon ---
+logo_path = os.path.join("assets", "logo.png")
+favicon_path = os.path.join("assets", "favicon.png")
+if os.path.exists(logo_path):
+    logo = Image.open(logo_path)
+    st.image(logo, width=150)
+else:
+    st.write("Logo not found.")
 
+if os.path.exists(favicon_path):
+    st.set_page_config(page_title="Varredor de Restaurantes", page_icon=favicon_path, layout="wide")
+else:
+    st.set_page_config(page_title="Varredor de Restaurantes", page_icon="🍽️", layout="wide")
+
+API_KEY = st.secrets["GOOGLE_API_KEY"]
+PLACES_API_BASE = "https://places.googleapis.com/v1"
 
 def get_city_bounds(location):
     url = "https://maps.googleapis.com/maps/api/geocode/json"
@@ -24,7 +39,6 @@ def get_city_bounds(location):
         raise Exception(f"Error geocoding city: {res['status']}")
     bounds = res["results"][0]["geometry"].get("bounds") or res["results"][0]["geometry"].get("viewport")
     return bounds["northeast"], bounds["southwest"]
-
 
 def generate_grid(northeast, southwest, step_km=1.0):
     lat_step = step_km / 111
@@ -38,7 +52,6 @@ def generate_grid(northeast, southwest, step_km=1.0):
             lng += lng_step
         lat += lat_step
     return points
-
 
 def search_nearby(lat, lng, radius=4000):
     url = f"{PLACES_API_BASE}/places:searchText"
@@ -76,7 +89,6 @@ def search_nearby(lat, lng, radius=4000):
             break
     return results
 
-
 def calculate_weighted_ratings(restaurants):
     review_counts = [r["Total Reviews"] for r in restaurants if isinstance(r["Total Reviews"], int)]
     m = int(np.percentile(review_counts, 75)) if review_counts else 0
@@ -89,7 +101,6 @@ def calculate_weighted_ratings(restaurants):
         r["Weighted Rating"] = round(weighted, 3)
 
     return restaurants
-
 
 def create_map(data):
     if not data:
@@ -107,7 +118,6 @@ def create_map(data):
             tooltip=row["Name"]
         ).add_to(m)
     return m
-
 
 def export_to_google_sheets(data, sheet_name, worksheet_name):
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
@@ -138,9 +148,7 @@ def export_to_google_sheets(data, sheet_name, worksheet_name):
     worksheet.append_rows(rows, value_input_option="USER_ENTERED")
     return True
 
-
 def main():
-    st.set_page_config(layout="wide")
     st.title("🍽️ Restaurant Scraper & Explorer")
     if "data" not in st.session_state:
         st.session_state["data"] = []
@@ -234,7 +242,6 @@ def main():
                 st.success("Google Sheet updated!")
             else:
                 st.error("Failed to upload.")
-
 
 if __name__ == "__main__":
     main()
